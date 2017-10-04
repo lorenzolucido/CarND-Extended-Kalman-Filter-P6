@@ -1,5 +1,8 @@
 #include "kalman_filter.h"
+#include "tools.h"
+#include <iostream>
 
+using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -22,18 +25,50 @@ void KalmanFilter::Predict() {
   TODO:
     * predict the state
   */
+  x_ = F_ * x_;
+	P_ = (F_ * P_ * F_.transpose()) + Q_;
 }
 
-void KalmanFilter::Update(const VectorXd &z) {
+void KalmanFilter::Update(const VectorXd &z, bool extended) {
   /**
   TODO:
     * update the state by using Kalman Filter equations
   */
+  VectorXd z_pred;
+  VectorXd y;
+  MatrixXd H;
+
+  if(extended)
+  {
+    
+    // If both px and py are equal to zero we do not update the Kalman Filter at all.
+    // This is a conservative way to avoid division by zero.
+    if( x_(0) == 0. and x_(1) == 0.)
+      return;
+
+    z_pred = Tools::CartesianToPolar(x_);
+    H = Tools::CalculateJacobian(x_); //  Use Jacobian Matrix if non linear
+    y = z - z_pred;
+    float pi = acos(-1);
+    
+    if(y[1] < -pi)
+      y[1] += 2*pi; 
+    if(y[1] > pi)
+      y[1] -= 2*pi; 
+  }
+  else
+  {
+    H = H_; // Use the standard matrix H_ if linear
+    z_pred = H * x_;
+    y = z - z_pred;
+  }
+	MatrixXd Ht = H.transpose();
+	MatrixXd S = (H * P_ * Ht) + R_;
+	MatrixXd K = P_ * Ht * S.inverse();
+
+	//new estimate
+	x_ = x_ + (K * y);
+	MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
+	P_ = (I - K * H) * P_;
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
-}

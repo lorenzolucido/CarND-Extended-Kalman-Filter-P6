@@ -22,13 +22,23 @@ public:
   /**
   * A helper method to calculate RMSE.
   */
-  VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth);
+  static VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth);
 
   /**
   * A helper method to calculate Jacobians.
   */
-  MatrixXd CalculateJacobian(const VectorXd& x_state);
+  static MatrixXd CalculateJacobian(const VectorXd& x_state);
 
+  /**
+  * A helper method to convert cartesian to polar coordinates
+  */
+  static VectorXd CartesianToPolar(const VectorXd& x_state);
+
+  /**
+  * A helper method to convert polar to cartesian coordinates
+  */
+  static VectorXd PolarToCartesian(const VectorXd& x_state);
+  
 };
 
 #endif /* TOOLS_H_ */
